@@ -42,7 +42,7 @@ Better details here:
 
 - **Measure are here**: [DAX Codes](https://github.com/radha2106/Viz1/blob/main/Dax%20Code).
 - **Data Modeling is showed like this**: [Data Modeling](https://github.com/radha2106/Viz1/blob/main/DataModel%20PBI.png).
-- **Full Dashboard is here**: [Viz1](https://app.powerbi.com/view?r=eyJrIjoiZTdkYmIyM2QtYzNkZS00NzlkLTg4ZTktZGUzYTgwMDc4MWM1IiwidCI6IjQ4MjkzMjgyLTgzMmQtNGQwYi05ZTBmLTVmMmFmYTg5YTFlNCIsImMiOjJ9)
+- **Full Dashboard is here**: [Viz1](https://app.powerbi.com/view?r=eyJrIjoiMWU2NDM5ZWItNThlYS00ZTllLThhZWUtZDNiNTE3MDJkNTY1IiwidCI6IjQ4MjkzMjgyLTgzMmQtNGQwYi05ZTBmLTVmMmFmYTg5YTFlNCIsImMiOjJ9)
 
 ## Colors Used
 
