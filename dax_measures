@@ -1,0 +1,283 @@
+DEFINE
+    MEASURE 'Calcs'[rate_emails] = // Measure to return total percentage rating of email department
+udf_yes_rate([total_emails],[total_yes_emails])
+    
+	MEASURE 'Calcs'[total_emails] = // Measure to count total emails completed
+SUM(ft_week_emails[total_email])
+    
+	MEASURE 'Calcs'[total_yes_emails] = // Measure to count total yes emails completed
+SUM(ft_week_emails[csat])
+    
+	MEASURE 'Calcs'[total_no_emails] = // Measure to count total no emails completed
+SUM(ft_week_emails[dsat])
+
+    MEASURE 'Calcs'[label_help] = 0
+	
+    MEASURE 'Calcs'[label_catg] = // Measure separator of categories
+SELECTEDVALUE(dim_category[category_name])& " | " & FORMAT([total_contact],"#,##0")
+
+    MEASURE 'Calcs'[status_icon_good] = // SVG Image for Good Status
+"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='65' height='18'>
+  <rect x='0' y='0' width='65' height='18' rx='3' fill='#03C988'/>
+  <text x='50%' y='60%' font-family='Segoe UI' font-size='10' font-weight='650'
+        fill='#FFF6F6' text-anchor='middle' dominant-baseline='middle'>
+    Good</text>
+</svg>"
+
+    MEASURE 'Calcs'[status_icon_review] = // SVG Image for Review Status
+"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='65' height='18'>
+  <rect x='0' y='0' width='65' height='18' rx='3' fill='#FFD66B'/>
+  <text x='50%' y='60%' font-family='Segoe UI' font-size='10' font-weight='650' 
+  fill='#735F32' text-anchor='middle' dominant-baseline='middle'>Review</text>
+</svg>"
+
+    MEASURE 'Calcs'[status_email] = // Measure to return email status icon ratings
+udf_status([total_yes_emails],[total_no_emails])
+
+    MEASURE 'Calcs'[all_attendance] = // Sum of all attendance types
+SUM(ft_week_attendance[total_attendance])
+
+    MEASURE 'Calcs'[total_contact] = // Measure to get total contact made from all departments
+SUM(ft_daily_summary[rates])
+
+    MEASURE 'Calcs'[full_month_variance_emails] = // Monthly difference on emails
+udf_full_variance([total_emails],0)
+
+    MEASURE 'Calcs'[color_month_total_email] = // Measure to change value font color of total monthly emails
+udf_color_variance([total_emails],0)
+
+    MEASURE 'Calcs'[all_rate_contact] = // Measure to get Yes CSAT for all contact
+VAR _goodcsat = SUM(ft_daily_summary[yes_rate])
+RETURN
+udf_yes_rate([total_contact],_goodcsat)
+
+    MEASURE 'Calcs'[maxmin_point_contact] = // Measure to point max and min value
+//Variable Max Point
+VAR _maxpoint =
+    MAXX(
+        ALLSELECTED('dim_calendar'[months_name], 'dim_calendar'[dates] ),
+        [total_contact]
+    )
+
+//Variable Min Point
+VAR _minpoint =
+    MINX(
+        ALLSELECTED('dim_calendar'[months_name], 'dim_calendar'[dates] ),
+        [total_contact]
+    )
+
+//Get Result Value Color
+RETURN
+    SWITCH(
+        TRUE(),
+        _maxpoint = [total_contact], "#FFFFFF",
+        _minpoint = [total_contact], "#FFFFFF"
+    )
+    
+	MEASURE 'Calcs'[color_month_total_rate] = // Measure to change value color of all monthly total contact rate
+udf_color_variance([all_rate_contact],0)
+
+    MEASURE 'Calcs'[color_month_total_contact] = // Measure to change value color of all monthly total contact
+udf_color_variance([total_contact],0)
+
+    MEASURE 'Calcs'[last_month_contact] = // Last month difference and percentage change all contact
+udf_full_variance([total_contact],0)
+
+    MEASURE 'Calcs'[total_calls] = // Measure to count total calls completed
+SUM(ft_week_calls[total_calls])
+
+    MEASURE 'Calcs'[full_month_variance_calls] = // Monthly difference on calls
+udf_full_variance([total_calls],0)
+
+    MEASURE 'Calcs'[total_yes_calls] = // Measure to count total yes calls completed
+SUM(ft_week_calls[csat])
+
+    MEASURE 'Calcs'[total_no_calls] = // Measure to count total no calls completed
+SUM(ft_week_calls[dsat])
+
+    MEASURE 'Calcs'[rate_calls] = // Measure to return total percentage rating of calls department
+udf_yes_rate([total_calls],[total_yes_calls])
+
+    MEASURE 'Calcs'[status_calls] = // Measure to return call status icon ratings
+udf_status([total_yes_calls],[total_no_calls])
+
+    MEASURE 'Calcs'[color_month_total_calls] = // Measure to change value font color of monthly total calls
+udf_color_variance([total_calls],0)
+
+    MEASURE 'Calcs'[color_week_rate_calls] = // Measure to change value color of weekly rate emails
+udf_color_variance([rate_calls],1)
+
+    MEASURE 'Calcs'[total_chats] = //Measure to count total chats completed
+SUM(ft_week_chats[total_chats])
+
+    MEASURE 'Calcs'[full_month_variance_chats] = // Monthly difference on chats
+udf_full_variance([total_chats],0)
+
+    MEASURE 'Calcs'[total_yes_chats] = // Measure to count total yes chats completed
+SUM(ft_week_chats[csat])
+
+    MEASURE 'Calcs'[total_no_chats] = // Measure to count total no chats
+SUM(ft_week_chats[dsat])
+
+    MEASURE 'Calcs'[rate_chats] = // Measure to return total percentage rating of chat department
+udf_yes_rate([total_chats],[total_yes_chats])
+
+    MEASURE 'Calcs'[status_chats] = // Measure to return chats status icon ratings
+udf_status([total_yes_chats],[total_no_chats])
+
+    MEASURE 'Calcs'[color_month_total_chats] = // Measure to change value font color of monthly total chats
+udf_color_variance([total_chats],0)
+
+    MEASURE 'Calcs'[aht_calls] = // Average handling call time
+udf_avg_aht(ft_week_calls[handling_time])
+
+    MEASURE 'Calcs'[aht_chat] = // Average handling chat time
+udf_avg_aht(ft_week_chats[handling_time])
+
+    MEASURE 'Calcs'[last_month_aht_calls] = //Measure to get last month calls aht
+udf_last_aht([aht_calls],0)
+
+    MEASURE 'Calcs'[last_month_aht_chats] = // Measure to get last month chats aht
+udf_last_aht([aht_chat],0)
+
+    MEASURE 'Calcs'[reference_month_label] = "difference from last month"
+    
+	MEASURE 'Calcs'[last_month_rate] = // Get last month result rate
+udf_last_result([all_rate_contact],0)
+
+    MEASURE 'Calcs'[ontime] = // Measure to get percentage of 'On Time' attendance
+	VAR _ontime = CALCULATE(SUM(ft_week_attendance[total_attendance]),ft_week_attendance[attendance_type] = "on time")
+	VAR _all = CALCULATE(SUM(ft_week_attendance[total_attendance]))
+RETURN
+DIVIDE(_ontime,_all)
+
+    MEASURE 'Calcs'[full_week_variance_emails] = // Total last week result email
+udf_full_variance([total_emails],1)
+
+    MEASURE 'Calcs'[full_week_variance_chats] = // Total last week result chats
+udf_full_variance([total_chats],1)
+
+    MEASURE 'Calcs'[last_week_rate_calls] = // Total last week rate calls
+udf_last_result([rate_calls],1)
+
+    MEASURE 'Calcs'[all_qa_score] = AVERAGE(ft_week_qa_score[total_score])/100
+	
+    MEASURE 'Calcs'[reference_week_label] = "difference from last week"
+	
+    MEASURE 'Calcs'[color_week_total_email] = // Measure to change value font color of weekly total emails
+udf_color_variance([total_emails],1)
+
+    MEASURE 'Calcs'[color_week_rate_emails] = // Measure to change value color of weekly total yes emails
+udf_color_variance([rate_emails],1)
+
+    MEASURE 'Calcs'[qa_less_help] = 1 - [all_qa_score]
+	
+    MEASURE 'Calcs'[full_week_variance_yes_emails] = // Total last week result yes email
+udf_full_variance([total_yes_emails],1)
+
+    MEASURE 'Calcs'[full_week_variance_no_emails] = // Total last week result no email
+udf_full_variance([total_no_emails],1)
+
+    MEASURE 'Calcs'[last_week_rate_emails] = // Total last week rate emails
+	udf_last_result([rate_emails],1)
+	
+    MEASURE 'Calcs'[last_week_qa] = // Total last week qa score
+	udf_last_result([all_qa_score],1)
+	
+    MEASURE 'Calcs'[last_week_ontime] = // Total last week attendance
+	udf_last_result([ontime],1)
+	
+    MEASURE 'Calcs'[full_week_variance_yes_chats] = // Total last week result yes chats
+udf_full_variance([total_yes_chats],1)
+
+    MEASURE 'Calcs'[full_week_variance_no_chats] = // Total last week result no chats
+udf_full_variance([total_no_chats],1)
+
+    MEASURE 'Calcs'[last_week_aht_chats] = //Measure to get last week chats aht
+udf_last_aht([aht_chat],1)
+
+    MEASURE 'Calcs'[color_week_total_chats] = // Measure to change value font color of weekly total chats
+udf_color_variance([total_chats],1)
+
+    MEASURE 'Calcs'[last_week_rate_chats] = // Measure to last week result chats rates
+udf_last_result([rate_chats],1)
+
+    MEASURE 'Calcs'[color_week_rate_chats] = // Measure to change value color of weekly rate emails
+udf_color_variance([rate_chats],1)
+
+    MEASURE 'Calcs'[color_week_total_calls] = // Measure to change value font color of total calls
+udf_color_variance([total_calls],1)
+
+    MEASURE 'Calcs'[full_week_variance_calls] = // Full change difference on calls (monhtly)
+udf_full_variance([total_calls],1)
+
+    MEASURE 'Calcs'[full_week_variance_yes_calls] = // Full change difference on yes calls (weekly)
+udf_full_variance([total_yes_calls],1)
+
+    MEASURE 'Calcs'[full_week_variance_no_calls] = // Full change difference on no calls (weekly)
+udf_full_variance([total_no_calls],1)
+
+    MEASURE 'Calcs'[last_week_aht_calls] = // Measure to get last month calls aht
+udf_last_aht([aht_calls],1)
+
+    MEASURE 'Calcs'[message_value] = VAR _order = SELECTEDVALUE(message_notification[Order])
+RETURN
+SWITCH(
+    _order,
+    0,[all_rate_contact],
+    1,[rate_emails],
+    2,[rate_calls],
+    3,[rate_chats],
+    4,[all_qa_score])
+    
+	MEASURE 'Calcs'[message_compare] = VAR _order = SELECTEDVALUE(message_notification[Order])
+RETURN
+SWITCH(
+    _order,
+    0,[all_rate_compare],
+    1,[rates_compare_emails],
+    2,[rates_compare_calls],
+    3,[rates_compare_chats],
+    4,[last_week_qa])
+    
+	MEASURE 'Calcs'[all_rate_compare] = CALCULATE([all_rate_contact],PREVIOUSMONTH(dim_calendar[dates]))
+    
+	MEASURE 'Calcs'[rates_compare_emails] = CALCULATE([rate_emails],DATEADD(dim_calendar[dates],-7,DAY))
+    
+	MEASURE 'Calcs'[rates_compare_calls] = CALCULATE([rate_calls],DATEADD(dim_calendar[dates],-7,DAY))
+    
+	MEASURE 'Calcs'[rates_compare_chats] = CALCULATE([rate_chats],DATEADD(dim_calendar[dates],-7,DAY))
+    
+	MEASURE 'Calcs'[total_qa_evaluations] = COUNTROWS(ft_week_qa_score)
+    
+	MEASURE 'Calcs'[qa_week_filter] = VAR SelectedWeeks =
+    number_weeks[number_weeks_value]
+
+VAR LastQAWeek =
+    CALCULATE(
+        MAX(dim_calendar[week_start]),
+        REMOVEFILTERS(dim_calendar),
+        REMOVEFILTERS(ft_week_qa_score)
+    )
+
+VAR CurrentWeek =
+    MAX(dim_calendar[week_start])
+
+VAR WeeksAgo =
+    DATEDIFF(
+        CurrentWeek,
+        LastQAWeek,
+        WEEK
+    )
+
+RETURN
+    IF(
+        WeeksAgo >= 0 &&
+        WeeksAgo < SelectedWeeks,
+        [all_qa_score],
+        BLANK()
+    )
+    
+	MEASURE 'Calcs'[dashboard_info] = "https://github.com/radha2106/Viz1-Callcenter"
+    
+	MEASURE 'number_weeks'[number_weeks_value] = SELECTEDVALUE('number_weeks'[number_weeks], 8)
