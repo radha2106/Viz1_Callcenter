@@ -1,0 +1,127 @@
+DEFINE
+    /// Function to formatting long numbers
+    FUNCTION udf_format_measure = (_measure:DOUBLE) =>
+      VAR _value = ABS(_measure)
+      VAR _format_result =
+          SWITCH(
+              TRUE(),
+              _value >= 1e9, "#,##0,,,.0 MM",
+              _value >= 1e6, "#,##0,,.0 M",
+              _value >= 1e3, "#,##0,.0 K",
+              "#,##0"
+          )
+      RETURN
+      _format_result
+  
+    /// Calculate from the base measure the last month or last week result; get the base and percentage difference between the base meassure and the last result with formatting (0 for month; 1 for week)
+    FUNCTION udf_full_variance = (_measure:MEASUREREF, _option:INT64) =>
+      // Base meassure
+      VAR _actual = _measure
+      // Past month result
+      VAR _past_month = CALCULATE(_measure,PREVIOUSMONTH(dim_calendar[dates]))
+    	// Past week result
+    	VAR _past_week = CALCULATE(_measure,DATEADD(dim_calendar[dates],-7,DAY))  	
+      // Absolute difference between base and past result
+      VAR _difference_month = _actual - _past_month
+  	  VAR _difference_week = _actual - _past_week  
+      // Last month-week absolute result format
+      VAR _abs = "+#,##;-#,##;0"
+      VAR _abs_format_month = FORMAT(_difference_month,_abs)
+  	  VAR _abs_format_week = FORMAT(_difference_week,_abs)  
+      // Last month-week percentage result format
+      VAR _pct = "+0.0%;-0.0%;0%"
+      VAR _pct_result_month = DIVIDE(_actual-_past_month,_past_month)
+  	  VAR _pct_result_week = DIVIDE(_actual-_past_week,_past_week)
+      VAR _pct_format_month = FORMAT(_pct_result_month,_pct)
+  	  VAR _pct_format_week = FORMAT(_pct_result_week,_pct)  
+      // Icons
+      VAR _divider = " | "
+      VAR _space = " "
+      VAR _up = " ▲"
+      VAR _down = " ▼"
+      VAR _icon_month = SWITCH(TRUE(),_pct_result_month > 0,_up,_pct_result_month < 0,_down)
+  	  VAR _icon_week = SWITCH(TRUE(),_pct_result_week > 0,_up,_pct_result_week < 0,_down)  
+      // Result month
+      VAR _result_month = 
+      SWITCH(TRUE(),
+          _pct_result_month = 0, BLANK(),
+          ISBLANK(_pct_result_month), _space & _abs_format_month & _icon_month,
+          _space & _abs_format_month & _divider & _pct_format_month & _icon_month
+      )  	
+  	  // Result week
+      VAR _result_week = 
+      SWITCH(TRUE(),
+          _pct_result_week = 0, BLANK(),
+          ISBLANK(_pct_result_week), _space & _abs_format_week & _icon_week,
+          _space & _abs_format_week & _divider & _pct_format_week & _icon_week
+      )  	
+  	RETURN
+  	SWITCH(TRUE(), _option = 0, _result_month, _option = 1, _result_week)
+  
+    /// Color formatting based on change percentage (0 for monthly - 1 for weekly)
+    FUNCTION udf_color_variance = (_measure:MEASUREREF,_option:INT64) =>
+      // Base meassure
+      VAR _actual = _measure      
+      // Past month result
+      VAR _past_month = CALCULATE(_measure,PREVIOUSMONTH(dim_calendar[dates]))      
+      // Past week result
+      VAR _past_week = CALCULATE(_measure,DATEADD(dim_calendar[dates],-7,DAY))      
+      // Absolute difference between base and past result
+      VAR _difference_month = DIVIDE(_actual-_past_month,_past_month)
+      VAR _difference_week = DIVIDE(_actual-_past_week,_past_week)      
+      // Option result
+      VAR _result = SWITCH(TRUE(),_option = 0, _difference_month, _option = 1, _difference_week,"option 0 for month result or 1 for week result")      
+      // Color formatting
+      VAR _color_result = 
+      SWITCH(
+      TRUE(),
+      _result = 0, "#FFFFFF", --white
+      _result > 0, "#4E9F3D", --green
+      _result < 0, "#F45952" --red
+      )
+      RETURN
+      _color_result
+  
+    /// Function short to get YES rating divided by all the rates(contacts)
+    FUNCTION udf_yes_rate = (_all_contacts:MEASUREREF,_yes_rates:SCALAR) =>
+      DIVIDE(_yes_rates,_all_contacts)
+  
+    /// Function for status comparassion between good and bad rates
+    FUNCTION udf_status = (_yes_rates:MEASUREREF,_no_rates:MEASUREREF) =>
+      SWITCH(
+          TRUE(),
+          _yes_rates > _no_rates,[status_icon_good],
+          _yes_rates < _no_rates,[status_icon_review])
+  
+    /// Function to get average handling time formatted
+    FUNCTION udf_avg_aht = (_handling_column:COLUMNREF) =>
+      VAR _avg_aht = AVERAGE(_handling_column)
+      RETURN
+      FORMAT(_avg_aht,"mm:ss")
+  
+    /// Function to get past result (monthly/week) of handling time (0 for month - 1 for week)
+    FUNCTION udf_last_aht = (_measure:MEASUREREF, _option:INT64) =>
+      // Base measure
+      VAR _aht_measure = _measure      
+      // Last month result
+      VAR _past_month = CALCULATE(_measure,PREVIOUSMONTH(dim_calendar[dates]))      
+      // Last week result
+      VAR _past_week = CALCULATE(_measure,DATEADD(dim_calendar[dates],-7,DAY))      
+      // Formatted month result
+      VAR _format_month = FORMAT(_past_month,"mm:ss")      
+      // Formatted week result
+      VAR _format_week = FORMAT(_past_week,"mm:ss")      
+      VAR _result = SWITCH(TRUE(),_option = 0, _format_month, _option = 1, _format_week,"option 0 for month result or 1 for week result")      
+      RETURN
+      _result
+  
+    /// Get last month-week result based on base measure. Option 0 for last month; Option 1 for last week
+    FUNCTION udf_last_result = (_measure:MEASUREREF, _option:INT64) =>
+      // Last month result
+      VAR _past_month = CALCULATE(_measure,PREVIOUSMONTH(dim_calendar[dates]))      
+      // Last week result
+      VAR _past_week = CALCULATE(_measure,DATEADD(dim_calendar[dates],-7,DAY))      
+      // Result selection
+      VAR _result = SWITCH(TRUE(),_option = 0, _past_month, _option = 1, _past_week,"option 0 for month result or 1 for week result")      
+      RETURN
+      _result
