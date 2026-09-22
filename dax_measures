@@ -146,10 +146,17 @@ udf_last_aht([aht_chat],0)
 udf_last_result([all_rate_contact],0)
 
     MEASURE 'Calcs'[ontime] = // Measure to get percentage of 'On Time' attendance
-	VAR _ontime = CALCULATE(SUM(ft_week_attendance[total_attendance]),ft_week_attendance[attendance_type] = "on time")
-	VAR _all = CALCULATE(SUM(ft_week_attendance[total_attendance]))
+VAR _ontime = CALCULATE(SUM(ft_week_attendance[total_attendance]), ft_week_attendance[attendance_type] = "on time")
+VAR _all = CALCULATE(SUM(ft_week_attendance[total_attendance]))
+VAR _result = 
+    SWITCH(
+        TRUE(),
+        ISBLANK(_all), BLANK(),
+        ISBLANK(_ontime), 0,
+        DIVIDE(_ontime, _all, 0)
+    )
 RETURN
-DIVIDE(_ontime,_all)
+_result
 
     MEASURE 'Calcs'[full_week_variance_emails] = // Total last week result email
 udf_full_variance([total_emails],1)
