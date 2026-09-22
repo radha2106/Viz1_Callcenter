@@ -95,9 +95,14 @@ DEFINE
   
     /// Function to get average handling time formatted
     FUNCTION udf_avg_aht = (_handling_column:COLUMNREF) =>
-      VAR _avg_aht = AVERAGE(_handling_column)
-      RETURN
-      FORMAT(_avg_aht,"mm:ss")
+VAR _avg_aht = AVERAGE(_handling_column)
+VAR _format = FORMAT(_avg_aht, "mm:ss")
+RETURN
+    IF(
+        ISBLANK(_avg_aht),
+        BLANK(),
+        _format
+    )
   
     /// Function to get past result (monthly/week) of handling time (0 for month - 1 for week)
     FUNCTION udf_last_aht = (_measure:MEASUREREF, _option:INT64) =>
